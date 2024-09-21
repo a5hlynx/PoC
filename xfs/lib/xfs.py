@@ -34,11 +34,18 @@ class XFS:
 		if self.first_inode_number == None:
 			return
 
-		print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
-				% \
-				("inode", "name", "mode", "uid", "gid", "size", \
-				"atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
-				"di_mode_ft", "parent_inode", "path", "is_deleted"), file = self.out_fd)
+		if self.deleted:
+			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
+					% \
+					("inode", "name", "mode", "uid", "gid", "size", \
+					"atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
+					"di_mode_ft", "parent_inode", "path", "is_deleted"), file = self.out_fd)
+		else:
+			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
+					% \
+					("inode", "name", "mode", "uid", "gid", "size", \
+					"atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
+					"di_mode_ft", "parent_inode", "path"), file = self.out_fd)
 
 	def _put_inode_rec(self, inode_rec):
 
@@ -72,24 +79,42 @@ class XFS:
 			_di_uid = -1
 			_di_gid = -1
 			_di_size = -1
-			
-		print("%d,%s,%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%s,%s" \
-				% \
-				(_inode_num,\
-				inode_rec.name,\
-				_di_mode,\
-				_di_uid,\
-				_di_gid,\
-				_di_size,\
-				_atime,\
-				_mtime,\
-				_ctime,\
-				_crtime,\
-				inode_rec.ftype,\
-				conv_type_to_str(_data_fork_type),\
-				inode_rec.parent_inode_num, \
-				inode_rec.parent_path, \
-				str(inode_rec.is_deleted)), file = self.out_fd)
+
+		if self.deleted:
+			print("%d,%s,%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%s,%s" \
+					% \
+					(_inode_num,\
+					inode_rec.name,\
+					_di_mode,\
+					_di_uid,\
+					_di_gid,\
+					_di_size,\
+					_atime,\
+					_mtime,\
+					_ctime,\
+					_crtime,\
+					inode_rec.ftype,\
+					conv_type_to_str(_data_fork_type),\
+					inode_rec.parent_inode_num, \
+					inode_rec.parent_path, \
+					str(inode_rec.is_deleted)), file = self.out_fd)
+		else:
+			print("%d,%s,%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%s" \
+					% \
+					(_inode_num,\
+					inode_rec.name,\
+					_di_mode,\
+					_di_uid,\
+					_di_gid,\
+					_di_size,\
+					_atime,\
+					_mtime,\
+					_ctime,\
+					_crtime,\
+					inode_rec.ftype,\
+					conv_type_to_str(_data_fork_type),\
+					inode_rec.parent_inode_num, \
+					inode_rec.parent_path), file = self.out_fd)
 
 	def _get_inode_core(self, _inumber):
 

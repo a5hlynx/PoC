@@ -97,7 +97,7 @@ def xfs_dinode_size(version):
 	_size = sizeof(xfs_dinode)
 	if version != 0x3:
 		_size -= sizeof(c_uint64) * 4 + sizeof(c_uint32) * 2 + \
-				sizeof(uuid_t) + sizeof(xfs_timestamp) + \
+				sizeof(uuid) + sizeof(xfs_timestamp) + \
 				sizeof(c_uint8) * 12
 
 	return _size
