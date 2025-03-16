@@ -12,14 +12,16 @@ optional arguments:
                         specify output file
   -d, --deleted         specify to search deleted objects
 
-$ python3 meta.py -h
-usage: journal.exe [-h] -i INPUT -o OUTPUT [-t]
+$ python3 journal.py -h
+usage: journal.py [-h] -i INPUT -o OUTPUT [-t]
 
-options:
-  -h, --help           show this help message and exit
-  -i, --input INPUT    specify disk image
-  -o, --output OUTPUT  specify output file
-  -t, --trans          show transaction ids
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        specify disk image
+  -o OUTPUT, --output OUTPUT
+                        specify output file
+  -t, --trans           show transaction ids
 ```
 
 # Examples
