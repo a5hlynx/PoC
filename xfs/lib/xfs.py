@@ -552,7 +552,7 @@ class XFS:
 		print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
 				% \
 				("tid", "item_no", "type", "affected", "inode", "name", "mode", \
-				"size", "uid", "gid", "atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
+				"uid", "gid", "size", "atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
 				"di_mode_ft", "parent_inode", "extra"), file = self.out_fd)
 
 	def _get_inode_number(self, ag_no, agbno, isize):
