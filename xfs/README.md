@@ -11,10 +11,20 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         specify output file
   -d, --deleted         specify to search deleted objects
+
+$ python3 meta.py -h
+usage: journal.exe [-h] -i INPUT -o OUTPUT [-t]
+
+options:
+  -h, --help           show this help message and exit
+  -i, --input INPUT    specify disk image
+  -o, --output OUTPUT  specify output file
+  -t, --trans          show transaction ids
 ```
 
-# Example
+# Examples
 
 ```
 $ python3 meta.py -i <path_to_xfs_formatted_disk_image> -o <path_to_output_csv>
+$ python3 journal.py -i <path_to_xfs_formatted_disk_image> -o <path_to_output_csv>
 ```
