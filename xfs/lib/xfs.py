@@ -19,17 +19,17 @@ class XFS:
 		if self.first_inode_number == None:
 			return
 		if self.deleted:
-			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
+			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
 					% \
 					("inode", "name", "mode", "uid", "gid", "size", \
 					"atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
-					"di_mode_ft", "parent_inode", "path", "is_deleted"), file = self.out_fd)
+					"di_mode_ft", "parent_inode", "path", "sl_target", "attrs", "is_deleted"), file = self.out_fd)
 		else:
-			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
+			print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" \
 					% \
 					("inode", "name", "mode", "uid", "gid", "size", \
 					"atime", "mtime", "ctime", "crtime", "xfs_dir3_ft", \
-					"di_mode_ft", "parent_inode", "path"), file = self.out_fd)
+					"di_mode_ft", "parent_inode", "path", "sl_target", "attrs"), file = self.out_fd)
 
 	def _put_inode_rec(self, inode_rec):
 
@@ -72,7 +72,7 @@ class XFS:
 				_ftype_str = inode_rec.ftype
 
 		if self.deleted:
-			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\",%s" \
+			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\",\"%s\",%s,,\"%s\"" \
 					% \
 					(inode_rec.inode_num,inode_rec.inode_num,\
 					inode_rec.name,\
@@ -88,9 +88,11 @@ class XFS:
 					_data_fork_type_str,\
 					_parent_inode_num,_parent_inode_num,\
 					inode_rec.parent_path,\
+					inode_rec.sl_target,\
+					str(inode_rec.attrs),\
 					str(inode_rec.is_deleted)), file = self.out_fd)
 		else:
-			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\"" \
+			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\",\"%s\",\"%s\"" \
 					% \
 					(inode_rec.inode_num,inode_rec.inode_num,\
 					inode_rec.name,\
@@ -105,7 +107,9 @@ class XFS:
 					_ftype_str,\
 					_data_fork_type_str,\
 					_parent_inode_num,_parent_inode_num,\
-					inode_rec.parent_path), file = self.out_fd)
+					inode_rec.parent_path,\
+					inode_rec.sl_target,\
+					str(inode_rec.attrs)), file = self.out_fd)
 
 	def _get_inode_core(self, inumber):
 
@@ -242,6 +246,15 @@ class XFS:
 				else:
 					_cur_path = parent_path + "/" + str(_name)
 				inode_rec.is_deleted = False
+
+				_dft = get_type(_inode_core.di_mode)
+				if _dft == S_IFLNK:
+					if _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_LOCAL:
+						inode_rec.sl_target = self._get_short_form_sl(_inumber, _inode_core)
+					elif _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_EXTENTS:
+						inode_rec.sl_target = self._get_block_sl(_inumber, _inode_core)
+				if _inode_core.di_aformat == 1:
+					inode_rec.attrs = self._get_short_form_attr(_inumber, _inode_core)
 				self._put_inode_rec(copy.deepcopy(inode_rec))
 				self._load_inode_detail(_offset, _inode_core, _inumber, _cur_path)
 			elif (_offset == None) or (_d == True):
@@ -262,6 +275,17 @@ class XFS:
 				else:
 					_cur_path = parent_path + "/" + str(_name)
 				inode_rec.is_deleted = True
+
+				if _inode_core != None:
+					_dft = get_type(_inode_core.di_mode)
+					if _dft == S_IFLNK:
+						if _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_LOCAL:
+							inode_rec.sl_target = self._get_short_form_sl(_inumber, _inode_core)
+						elif _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_EXTENTS:
+							inode_rec.sl_target = self._get_block_sl(_inumber, _inode_core)
+					if _inode_core.di_aformat == 1:
+						inode_rec.attrs = self._get_short_form_attr(_inumber, _inode_core)
+
 				self._put_inode_rec(copy.deepcopy(inode_rec))
 
 		return _o_in_block
@@ -372,6 +396,16 @@ class XFS:
 				_cur_path = parent_path + str(_name)
 			else:
 				_cur_path = parent_path + "/" + str(_name)
+
+			_dft = get_type(_inode_core.di_mode)
+			if _dft == S_IFLNK:
+				if _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_LOCAL:
+					inode_rec.sl_target = self._get_short_form_sl(_inumber, _inode_core)
+				elif _inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_EXTENTS:
+					inode_rec.sl_target = self._get_block_sl(_inumber, _inode_core)
+			if _inode_core.di_aformat == 1:
+				inode_rec.attrs = self._get_short_form_attr(_inumber, _inode_core)
+
 			self._put_inode_rec(copy.deepcopy(inode_rec))
 			if not inode_rec.is_deleted:
 				self._load_inode_detail(_offset, _inode_core, _inumber, _cur_path)
@@ -462,6 +496,79 @@ class XFS:
 
 		return _o
 
+	def _get_short_form_sl(self, i_num, inode_core):
+
+		_org = self.in_fd.tell()
+		_o = self._get_inode_offset(i_num) + inode_core.size()
+		self.in_fd.seek(_o)
+		_length = cpu_to_be64(inode_core.di_size)
+		try:
+			_name = self.in_fd.read(_length).decode('utf-8', errors='ignore').replace('\x00','')
+		except Exception as e:
+			_name = ""
+
+		self.in_fd.seek(_org)
+
+		return _name
+
+	def _get_block_sl(self, i_num, inode_core):
+		return ""
+
+	def _get_short_form_attr(self, i_num, inode_core):
+
+		_attrs = []
+		_org = self.in_fd.tell()
+		_o = self._get_inode_offset(i_num) + inode_core.size() + inode_core.di_forkoff * 8
+		self.in_fd.seek(_o)
+		_length = cpu_to_be64(inode_core.di_size)
+
+		_ptr = self.in_fd.read(sizeof(xfs_attr_sf_hdr))
+		_attr_sf_hdr = copy.deepcopy(New(_ptr, xfs_attr_sf_hdr))
+		_totsize = cpu_to_be16(_attr_sf_hdr.totsize)
+		_count = _attr_sf_hdr.count
+		for _i in range(0, _count, 1):
+			_o = self.in_fd.tell()
+			_ptr = self.in_fd.read(sizeof(xfs_attr_sf_entry))
+			_attr_sf_entry = copy.deepcopy(New(_ptr, xfs_attr_sf_entry))
+			_namelen = _attr_sf_entry.namelen
+			_valuelen = _attr_sf_entry.valuelen
+			_flags = _attr_sf_entry.flags
+			self.in_fd.seek(_o + xfs_attr_sf_entry.nameval.offset)
+			_name = self.in_fd.read(_namelen).decode('utf-8', errors='ignore').replace('\x00','')
+			try:
+				_value = self.in_fd.read(_valuelen).decode('utf-8').replace('\x00','').replace('"','""')
+			except:
+				_value = "0x" + self.in_fd.read(_valuelen).hex()
+
+			_flags_str = ""
+			if _flags & XFS_ATTR_LOCAL:
+				_flags_str = "XFS_ATTR_LOCAL"
+			if _flags & XFS_ATTR_ROOT:
+				if len(_flags_str) > 0:
+					_flags_str = _flags_str + "|"
+				_flags_str = _flags_str + "XFS_ATTR_ROOT"
+			if _flags & XFS_ATTR_SECURE:
+				if len(_flags_str) > 0:
+					_flags_str = _flags_str + "|"
+				_flags_str = _flags_str + "XFS_ATTR_SECURE"
+			if _flags & XFS_ATTR_PARENT:
+				if len(_flags_str) > 0:
+					_flags_str = _flags_str + "|"
+				_flags_str = _flags_str + "XFS_ATTR_PARENT"
+			if _flags & XFS_ATTR_INCOMPLETE:
+				if len(_flags_str) > 0:
+					_flags_str = _flags_str + "|"
+				_flags_str = _flags_str + "XFS_ATTR_INCOMPLETE"
+			_attr = []
+			_attr.append(_name)
+			_attr.append(_value)
+			_attr.append(_flags_str)
+			_attrs.append(_attr)
+
+		self.in_fd.seek(_org)
+		
+		return _attrs
+
 	def _set_first_inode(self, inode, inode_core):
 
 		inode_rec = InodeRec()
@@ -471,6 +578,15 @@ class XFS:
 		inode_rec.parent_path = ""
 		inode_rec.inode_num = inode
 		inode_rec.ftype = ""
+		_dft = get_type(inode_core.di_mode)
+		if _dft == S_IFLNK:
+			if inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_LOCAL:
+				inode_rec.sl_target = self._get_short_form_sl(inode, inode_core)
+			elif inode_core.di_format == xfs_dinode_fmt.XFS_DINODE_FMT_EXTENTS:
+				inode_rec.sl_target = self._get_block_sl(inode, inode_core)
+		if inode_core.di_aformat == 1:
+			inode_rec.attrs = self._get_short_form_attr(inode, inode_core)
+
 		self._put_inode_rec(copy.deepcopy(inode_rec))
 
 	def _load_inode(self, inode):
@@ -1653,8 +1769,8 @@ class XFS:
 		self.in_fd = in_fd
 		self.out_fd = out_fd
 		self.deleted = deleted
-		self._set_superblocks()
 
+		self._set_superblocks()
 		self._set_inode_b_plus_tree_info()
 		self._set_inode_range()
 		self.in_fd.seek(0, os.SEEK_END)
