@@ -72,7 +72,7 @@ class XFS:
 				_ftype_str = inode_rec.ftype
 
 		if self.deleted:
-			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\",\"%s\",%s,,\"%s\"" \
+			print("0x%x(%d),\"%s\",0o%o,%d,%d,%d,%s,%s,%s,%s,%s,%s,0x%x(%d),\"%s\",\"%s\",\"%s\",%s" \
 					% \
 					(inode_rec.inode_num,inode_rec.inode_num,\
 					inode_rec.name,\
