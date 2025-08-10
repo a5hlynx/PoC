@@ -1,3 +1,7 @@
+# Description
+
+Parsers for XFS-formatted disk images. meta.py extracts, parses and write inodes into csv, while journal.py does the same for journal logs.
+
 # Usage
 
 ```
