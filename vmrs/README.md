@@ -1,6 +1,6 @@
 # Description
 
-Converts memorydumps in the format of VMRS to raw memorydumps.
+Converts memorydumps in the format of VMRS to raw memorydumps. It requires vmsavedstatedumpprovider.dll matching the architecture of the environment where it runs should be placed in the same folder or one of the folders defined by $env:PATH. vmsavedstatedumpprovider.dll is included in Windows SDK.
 
 # Usage
 
